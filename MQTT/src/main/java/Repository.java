@@ -19,12 +19,10 @@ public class Repository extends PropertyChangeSupport {
 
     public void add(Point point) {
         points.add(point);
+        firePropertyChange("point", null, point);
     }
     public ArrayList<Point> getPoints() {
         return points;
     }
 
-    public void repaint() {
-        firePropertyChange("repaint", 0, 1);
-    }
 }
