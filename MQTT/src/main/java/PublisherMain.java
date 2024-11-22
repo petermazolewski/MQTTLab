@@ -1,9 +1,9 @@
 
+import javax.swing.JFrame;
+
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-
-import javax.swing.*;
 
 /**
  * This class is a simple MQTT publisher that sends messages to a TOPIC.
@@ -31,18 +31,19 @@ public class PublisherMain extends JFrame {
             MqttClient client = new MqttClient(BROKER, CLIENT_ID);
             client.connect();
             System.out.println("Connected to BROKER: " + BROKER);
-            int counter = 0;
-            while (true) {
-                String content = "this is message " + counter;
-                MqttMessage message = new MqttMessage(content.getBytes());
-                message.setQos(2);
-                if (client.isConnected())
-                    client.publish(TOPIC, message);
-                counter++;
-                System.out.println("Message published: " + content);
-                Thread.sleep(5000);
-            }
-        } catch (MqttException | InterruptedException e) {
+            // int counter = 0;
+            // while (true) {
+            //     String content = "this is message " + counter;
+            //     //String content = Repository.getInstance()
+            //     MqttMessage message = new MqttMessage(content.getBytes());
+            //     message.setQos(2);
+            //     if (client.isConnected())
+            //         client.publish(TOPIC, message);
+            //     counter++;
+            //     System.out.println("Message published: " + content);
+            //     Thread.sleep(5000);
+            // }
+        } catch (MqttException e) {
             e.printStackTrace();
         }
     }
@@ -52,8 +53,35 @@ public class PublisherMain extends JFrame {
         DrawPanelListener drawPanelListener = new DrawPanelListener();
         drawPanel.addMouseListener(drawPanelListener);
         add(drawPanel);
+        Repository.getInstance().addPropertyChangeListener(evt -> {
+            if ("point".equals(evt.getPropertyName())) {
+                Point newPoint = (Point) evt.getNewValue();
+                handleNewPoint(newPoint);
+            }
+    });
         Repository.getInstance().addPropertyChangeListener(drawPanel);
+    }
 
+    private void handleNewPoint(Point newPoint) {
+        try {
+            // Initialize and connect the client locally
+            MqttClient client = new MqttClient(BROKER, CLIENT_ID);
+            client.connect();
+            System.out.println("Connected to BROKER: " + BROKER);
+    
+            // Publish the point
+            String message = newPoint.getX() + "," + newPoint.getY(); // Serialize the point
+            if (client.isConnected()) {
+                client.publish(TOPIC, new MqttMessage(message.getBytes()));
+            }
+            System.out.println("Point published: " + message);
+
+            // Disconnect the client
+            client.disconnect();
+            System.out.println("Client disconnected.");
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
     }
 
 }

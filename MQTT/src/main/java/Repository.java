@@ -21,6 +21,7 @@ public class Repository extends PropertyChangeSupport {
         points.add(point);
         firePropertyChange("point", null, point);
     }
+    
     public ArrayList<Point> getPoints() {
         return points;
     }

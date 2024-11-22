@@ -1,7 +1,11 @@
 
-import org.eclipse.paho.client.mqttv3.*;
+import javax.swing.JFrame;
 
-import javax.swing.*;
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.MqttCallback;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 /**
  * This class is a simple MQTT subscriber that listens to a TOPIC.
@@ -45,6 +49,7 @@ public class SubscriberMain extends JFrame implements MqttCallback {
         add(drawPanel);
         Repository.getInstance().addPropertyChangeListener(drawPanel);
     }
+
     @Override
     public void connectionLost(Throwable throwable) {
         System.out.println("Connection lost: " + throwable.getMessage());
@@ -54,6 +59,14 @@ public class SubscriberMain extends JFrame implements MqttCallback {
     public void messageArrived(String s, MqttMessage mqttMessage) {
         System.out.println("Message arrived. Topic: " + s +
                 " Message: " + new String(mqttMessage.getPayload()));
+        String content = new String(mqttMessage.getPayload());
+        String[] parts = content.split(",");
+        int x = Integer.parseInt(parts[0].trim());
+        int y = Integer.parseInt(parts[1].trim());
+
+        Point point = new Point(x, y);
+        Repository.getInstance().add(point);
+        System.out.println("Point added to Subscriber's Repository: " + point);
     }
 
     @Override
